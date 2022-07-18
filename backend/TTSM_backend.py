@@ -4,7 +4,7 @@ import json
 import pathlib
 import time
 
-from backend.config import time_stack_naming, time_stack_max_depth
+from backend.config import data_filepath, time_stack_naming, time_stack_max_depth
 from backend.http_core import MyServer, load_file
 
 def now():
@@ -275,7 +275,7 @@ if __name__ == '__main__':
     args_map = parser.parse_args()
 
     server = MyServer(args_map.port)
-    ttsm = TTSM('../data/2022_0716_01.ttsm')
+    ttsm = TTSM(data_filepath)
 
 
     def root_test(req_path, req_HTTP_payload):
