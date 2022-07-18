@@ -4,7 +4,7 @@ import json
 import pathlib
 import time
 
-from backend.config import data_filepath, time_stack_naming, time_stack_max_depth
+from backend.config import data_filepath, backend_http_port, time_stack_naming, time_stack_max_depth
 from backend.http_core import MyServer, load_file
 
 def now():
@@ -271,7 +271,7 @@ class TTSM:
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', type=int, default=10009, help='the port to be listened on.')
+    parser.add_argument('--port', type=int, default=backend_http_port, help='the port to be listened on.')
     args_map = parser.parse_args()
 
     server = MyServer(args_map.port)
