@@ -24,6 +24,7 @@ class TTSM:
         self.time_stack = [{
             'full_name': 'root',
             'short_name': 'root',
+            'depth': 0,
             'state': 2,
             'child_counter': 0,
             'timestamp_1': 0,  # FIXME
@@ -142,9 +143,12 @@ class TTSM:
             current_time_slot_full_name = self.time_stack[-1]['full_name']
             new_time_slot_short_name = '{}{}'.format(self.time_stack[-1]['child_counter'], time_stack_naming[len(self.time_stack)])
 
+            new_time_slot_depth = len(self.time_stack)
+
             self.time_stack.append({
                 'full_name': current_time_slot_full_name + new_time_slot_short_name,
                 'short_name': new_time_slot_short_name,
+                'depth': new_time_slot_depth,
                 'state': 1,
                 'child_counter': 0,
                 'timestamp_1': command['timestamp']
@@ -226,6 +230,20 @@ class TTSM:
 
         elif command['name'] == 'progress_report':
             pass  # TODO
+
+        elif command['name'] == 'review':
+            HOUR = 3600 * 1000 * 1000 * 1000
+            timestamp_hi = now()  # TODO  if ('date' not in command) else ...
+            timestamp_lo = timestamp_hi - ((timestamp_hi + 8*HOUR - 3*HOUR) % (24*HOUR))  # timestamp of last 3:00AM (UTC+8)
+            reviewed_popped_time_slots = [slot for slot in self.popped_time_slots if (timestamp_lo < slot['timestamp_4'] and slot['timestamp_1'] < timestamp_hi)]
+            reviewed_unpopped_time_slots = [slot for slot in self.time_stack if (slot['timestamp_1'] < timestamp_hi)]
+
+            return {'success': True, 'review_data': {
+                        'timestamp_lo': timestamp_lo,
+                        'timestamp_hi': timestamp_hi,
+                        'reviewed_popped_time_slots': reviewed_popped_time_slots,
+                        'reviewed_unpopped_time_slots': reviewed_unpopped_time_slots,
+                    }}
 
         else:
             return {'success': False, 'msg': 'Unrecognized command "{}".'.format(command['name'])}
