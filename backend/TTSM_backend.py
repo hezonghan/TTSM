@@ -1,9 +1,12 @@
 
 import argparse
 import json
+import os
 import pathlib
+import sys
 import time
 
+sys.path.append(sys.path[0]+os.sep+"..")
 from backend.config import data_filepath, backend_http_port, time_stack_naming, time_stack_max_depth
 from backend.http_core import MyServer, load_file
 
@@ -235,10 +238,13 @@ class TTSM:
             HOUR = 3600 * 1000 * 1000 * 1000
             timestamp_hi = now()  # TODO  if ('date' not in command) else ...
             timestamp_lo = timestamp_hi - ((timestamp_hi + 8*HOUR - 3*HOUR) % (24*HOUR))  # timestamp of last 3:00AM (UTC+8)
+            timestamp_lo += 7*HOUR
+            timestamp_hi = timestamp_lo + 16*HOUR
             reviewed_popped_time_slots = [slot for slot in self.popped_time_slots if (timestamp_lo < slot['timestamp_4'] and slot['timestamp_1'] < timestamp_hi)]
             reviewed_unpopped_time_slots = [slot for slot in self.time_stack if (slot['timestamp_1'] < timestamp_hi)]
 
             return {'success': True, 'review_data': {
+                        'now': now(),
                         'timestamp_lo': timestamp_lo,
                         'timestamp_hi': timestamp_hi,
                         'reviewed_popped_time_slots': reviewed_popped_time_slots,
