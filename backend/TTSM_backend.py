@@ -207,18 +207,18 @@ class TTSM:
             # if self.time_stack[-1]['state'] != 1:
             #     return {'success': False, 'reason': 'Current time slot is NOT in PREPARING state.'}
 
-            task_id = command['root_task_id']
+            root_task_id = command['root_task_id']
             at_least_depth = command['at_least_depth']
             including_task_assigned_to_lower_depth = command['including_task_assigned_to_lower_depth'] if ('including_task_assigned_to_lower_depth' in command) else True
-            # if task_id == 0:
+            # if root_task_id == 0:
             #     return {'success': False, 'reason': 'Assignment depth of root task cannot be modified.'}
-            if task_id < 0 or task_id >= len(self.tasks_pool):
-                return {'success': False, 'reason': 'Task #{} not exists.'.format(task_id)}
+            if root_task_id < 0 or root_task_id >= len(self.tasks_pool):
+                return {'success': False, 'reason': 'Task #{} not exists.'.format(root_task_id)}
             if at_least_depth < 0 or at_least_depth > time_stack_max_depth:
                 return {'success': False, 'reason': 'Time stack depth {} is not valid.'.format(at_least_depth)}
 
             modified_tasks = []
-            queue = [task_id]
+            queue = [root_task_id]
             while len(queue) > 0:
                 task_id = queue[0]
                 if (self.task_assigned_depth[task_id] < at_least_depth - 1) and not including_task_assigned_to_lower_depth:
@@ -228,6 +228,12 @@ class TTSM:
                     self.task_assigned_depth[task_id] = at_least_depth
                     modified_tasks.append(task_id)
                 queue = queue[1:] + self.sub_tasks[task_id]
+
+            task_id = self.tasks_pool[root_task_id]['parent_task_id']
+            while task_id > 0 and at_least_depth > self.task_assigned_depth[task_id]:
+                self.task_assigned_depth[task_id] = at_least_depth
+                modified_tasks.append(task_id)
+                task_id = self.tasks_pool[task_id]['parent_task_id']
 
             return {'success': True, 'current_task_assigned_depth': self.task_assigned_depth, 'modified_tasks': modified_tasks}
 
